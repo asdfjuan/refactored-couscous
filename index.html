@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Observed Activities</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 40px; background: #f8f8f8; }
+  table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { background: #eee; }
+  h1 { margin-bottom: 0; }
+  #total { margin-top: 10px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>Observed Activities</h1>
+<div id="total"></div>
+<table id="activityTable">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Duration</th>
+      <th>Activity</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script>
+fetch('activities.csv')
+  .then(res => res.text())
+  .then(csvText => {
+    const data = Papa.parse(csvText, {header: true}).data;
+    const tbody = document.querySelector('#activityTable tbody');
+    let totalMinutes = 0;
+
+    data.forEach(row => {
+      if(!row.Date) return; // skip empty rows
+      const durationMatch = row.Duration.match(/(\d+)/);
+      const minutes = durationMatch ? parseInt(durationMatch[1]) : 0;
+      totalMinutes += minutes;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row.Date}</td>
+        <td>${row.Duration}</td>
+        <td>${row.Activity}</td>
+        <td>${row.Notes || ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    document.getElementById('total').innerText = `Total logged time: ${hours}h ${minutes}m`;
+  });
+</script>
+
+</body>
+</html>
